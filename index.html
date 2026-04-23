@@ -18,10 +18,10 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Segoe UI', sans-serif;
             background-color: var(--light);
             margin: 0;
-            padding: 20px;
+            padding: 15px;
             color: var(--dark);
         }
 
@@ -30,20 +30,15 @@
             margin: 0 auto;
             background: white;
             padding: 20px;
-            border-radius: 15px;
+            border-radius: 20px;
             box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-        }
-
-        header {
-            text-align: center;
-            margin-bottom: 20px;
         }
 
         .balance-card {
             background: linear-gradient(135deg, var(--primary), var(--secondary));
             color: white;
             padding: 20px;
-            border-radius: 12px;
+            border-radius: 15px;
             text-align: center;
             margin-bottom: 20px;
         }
@@ -64,16 +59,14 @@
             border-radius: 10px;
         }
 
-        .stat-income { color: var(--success); font-weight: bold; }
-        .stat-expense { color: var(--danger); font-weight: bold; }
-
         input, select, button {
             width: 100%;
             padding: 12px;
-            margin: 8px 0;
-            border-radius: 8px;
+            margin: 5px 0;
+            border-radius: 10px;
             border: 1px solid #ddd;
             box-sizing: border-box;
+            font-size: 16px;
         }
 
         button {
@@ -82,81 +75,85 @@
             border: none;
             font-weight: bold;
             cursor: pointer;
-            transition: 0.3s;
-        }
-
-        button:hover { background-color: var(--dark); }
-
-        .transaction-list {
-            margin-top: 20px;
-            list-style: none;
-            padding: 0;
         }
 
         .transaction-item {
             display: flex;
             justify-content: space-between;
-            padding: 10px;
+            align-items: center;
+            padding: 12px;
             border-bottom: 1px solid #eee;
+            background: #fdfdfd;
+            margin-bottom: 5px;
+            border-radius: 8px;
         }
 
-        /* Espaço para o Anúncio Google */
+        .delete-btn {
+            background-color: var(--danger);
+            width: 30px;
+            height: 30px;
+            padding: 0;
+            margin: 0;
+            margin-left: 10px;
+            font-size: 14px;
+            line-height: 30px;
+            border-radius: 50%;
+        }
+
         .ad-container {
-            margin-top: 20px;
+            margin-top: 25px;
+            padding: 10px;
             text-align: center;
-            min-height: 90px;
+            min-height: 100px;
+            border: 1px dashed #bbb;
             background: #fafafa;
-            border: 1px dashed #ccc;
+            border-radius: 10px;
         }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <header>
-        <h1>EuroFlow Pro 📉</h1>
+    <header style="text-align:center;">
+        <h1 style="margin-top:0;">EuroFlow Pro 📉</h1>
     </header>
 
     <div class="balance-card">
-        <p>Saldo Disponível</p>
-        <h2 id="balance">€ 0,00</h2>
+        <p style="margin:0; opacity:0.9;">Saldo Disponível</p>
+        <h2 id="balance" style="font-size: 32px; margin: 10px 0;">€ 0,00</h2>
     </div>
 
     <div class="stats">
         <div class="stat-box">
             <small>Entradas</small>
-            <div id="total-income" class="stat-income">€ 0,00</div>
+            <div id="total-income" style="color:var(--success); font-weight:bold;">€ 0,00</div>
         </div>
         <div class="stat-box">
             <small>Saídas</small>
-            <div id="total-expense" class="stat-expense">€ 0,00</div>
+            <div id="total-expense" style="color:var(--danger); font-weight:bold;">€ 0,00</div>
         </div>
     </div>
 
-    <div class="form">
-        <input type="text" id="desc" placeholder="Descrição (ex: Compras)">
-        <input type="number" id="amount" placeholder="Valor (€)">
-        <select id="type">
-            <option value="income">Entrada</option>
-            <option value="expense">Saída</option>
-        </select>
-        <button onclick="addTransaction()">Adicionar Registo</button>
-        <button style="background-color: #27ae60;" onclick="exportToExcel()">Exportar para Excel 📊</button>
-    </div>
+    <input type="text" id="desc" placeholder="O que comprou?">
+    <input type="number" id="amount" placeholder="Valor (€)">
+    <select id="type">
+        <option value="income">Entrada (+)</option>
+        <option value="expense">Saída (-)</option>
+    </select>
+    <button onclick="addTransaction()">Adicionar Registo</button>
+    <button style="background-color: #27ae60;" onclick="exportToExcel()">Exportar para Excel 📊</button>
 
-    <ul id="transaction-list" class="transaction-list"></ul>
+    <ul id="transaction-list" style="padding:0; list-style:none; margin-top:20px;"></ul>
 
     <div class="ad-container">
-        <p style="color: #999; font-size: 10px;">Publicidade</p>
+        <small style="color:#aaa;">Publicidade</small>
         <ins class="adsbygoogle"
              style="display:block"
              data-ad-client="ca-pub-2546407384279019"
              data-ad-slot="auto"
              data-ad-format="auto"
              data-full-width-responsive="true"></ins>
-        <script>
-             (adsbygoogle = window.adsbygoogle || []).push({});
-        </script>
+        <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
     </div>
 </div>
 
@@ -168,31 +165,47 @@
         const amount = document.getElementById('amount').value;
         const type = document.getElementById('type').value;
 
-        if (desc === '' || amount === '') return;
+        if (!desc || !amount) {
+            alert("Por favor, preencha a descrição e o valor.");
+            return;
+        }
 
         const transaction = { desc, amount: parseFloat(amount), type };
         transactions.push(transaction);
         updateUI();
         saveData();
+        
+        document.getElementById('desc').value = '';
+        document.getElementById('amount').value = '';
+    }
+
+    function deleteTransaction(index) {
+        if(confirm("Deseja apagar este registo?")) {
+            transactions.splice(index, 1);
+            updateUI();
+            saveData();
+        }
     }
 
     function updateUI() {
         const list = document.getElementById('transaction-list');
-        const balanceEl = document.getElementById('balance');
-        const incomeEl = document.getElementById('total-income');
-        const expenseEl = document.getElementById('total-expense');
-
-        list.innerHTML = '';
         let balance = 0, income = 0, expense = 0;
+        list.innerHTML = '';
 
         transactions.forEach((t, index) => {
-            const item = document.createElement('li');
-            item.className = 'transaction-item';
+            const color = t.type === 'income' ? 'var(--success)' : 'var(--danger)';
             const symbol = t.type === 'income' ? '+' : '-';
-            const color = t.type === 'income' ? 'green' : 'red';
             
-            item.innerHTML = `<span>${t.desc}</span> <span style="color:${color}">${symbol}${t.amount.toFixed(2)}€</span>`;
-            list.appendChild(item);
+            const li = document.createElement('li');
+            li.className = 'transaction-item';
+            li.innerHTML = `
+                <span>${t.desc}</span>
+                <div style="display:flex; align-items:center;">
+                    <span style="color:${color}; font-weight:bold;">${symbol}${t.amount.toFixed(2)}€</span>
+                    <button class="delete-btn" onclick="deleteTransaction(${index})">X</button>
+                </div>
+            `;
+            list.appendChild(li);
 
             if (t.type === 'income') {
                 income += t.amount;
@@ -203,9 +216,9 @@
             }
         });
 
-        balanceEl.innerText = `€ ${balance.toFixed(2)}`;
-        incomeEl.innerText = `€ ${income.toFixed(2)}`;
-        expenseEl.innerText = `€ ${expense.toFixed(2)}`;
+        document.getElementById('balance').innerText = `€ ${balance.toFixed(2)}`;
+        document.getElementById('total-income').innerText = `€ ${income.toFixed(2)}`;
+        document.getElementById('total-expense').innerText = `€ ${expense.toFixed(2)}`;
     }
 
     function saveData() {
@@ -213,20 +226,17 @@
     }
 
     function exportToExcel() {
-        let csvContent = "data:text/csv;charset=utf-8,Descricao,Valor,Tipo\n";
-        transactions.forEach(t => {
-            csvContent += `${t.desc},${t.amount},${t.type}\n`;
-        });
-        const encodedUri = encodeURI(csvContent);
-        const link = document.createElement("a");
-        link.setAttribute("href", encodedUri);
-        link.setAttribute("download", "EuroFlow_Relatorio.csv");
-        document.body.appendChild(link);
-        link.click();
+        let csv = "Descricao,Valor,Tipo\n";
+        transactions.forEach(t => csv += `${t.desc},${t.amount},${t.type}\n`);
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.setAttribute('href', url);
+        a.setAttribute('download', 'relatorio_financeiro.csv');
+        a.click();
     }
 
     updateUI();
 </script>
-
 </body>
 </html>
