@@ -1,242 +1,259 @@
 <!DOCTYPE html>
-<html lang="pt-PT">
+<html lang="pt-pt">
 <head>
-    <meta name="google-adsense-account" content="ca-pub-8621641752235676">
-    
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EuroFlow Pro - Gestão Financeira</title>
-
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8621641752235676" crossorigin="anonymous"></script>
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>EuroFlow Pro | Gestão Inteligente</title>
+    <link rel="manifest" href="manifest.json">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        :root {
-            --primary: #4e54c8;
-            --secondary: #8f94fb;
-            --success: #2ecc71;
-            --danger: #e74c3c;
-            --light: #f4f7f6;
-            --dark: #2c3e50;
-        }
-
-        body {
-            font-family: 'Segoe UI', sans-serif;
-            background-color: var(--light);
-            margin: 0;
-            padding: 15px;
-            color: var(--dark);
-        }
-
-        .container {
-            max-width: 500px;
-            margin: 0 auto;
-            background: white;
-            padding: 20px;
-            border-radius: 20px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-        }
-
-        .balance-card {
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            color: white;
-            padding: 20px;
-            border-radius: 15px;
-            text-align: center;
-            margin-bottom: 20px;
-        }
-
-        .stats {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 20px;
-        }
-
-        .stat-box {
-            flex: 1;
-            padding: 10px;
-            text-align: center;
-            background: #fff;
-            border: 1px solid #eee;
-            margin: 0 5px;
-            border-radius: 10px;
-        }
-
-        input, select, button {
-            width: 100%;
-            padding: 12px;
-            margin: 5px 0;
-            border-radius: 10px;
-            border: 1px solid #ddd;
-            box-sizing: border-box;
-            font-size: 16px;
-        }
-
-        button {
-            background-color: var(--primary);
-            color: white;
-            border: none;
-            font-weight: bold;
-            cursor: pointer;
-        }
-
-        .transaction-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 12px;
-            border-bottom: 1px solid #eee;
-            background: #fdfdfd;
-            margin-bottom: 5px;
-            border-radius: 8px;
-        }
-
-        .delete-btn {
-            background-color: var(--danger);
-            color: white;
-            width: 30px;
-            height: 30px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-left: 10px;
-            font-size: 14px;
-            border-radius: 50%;
-            border: none;
-            cursor: pointer;
-        }
-
-        .ad-container {
-            margin-top: 25px;
-            padding: 10px;
-            text-align: center;
-            min-height: 100px;
-            border: 1px dashed #bbb;
-            background: #fafafa;
-            border-radius: 10px;
-        }
+        body { touch-action: manipulation; font-family: 'Inter', sans-serif; }
+        .chart-container { position: relative; height: 200px; width: 100%; }
+        #welcome-modal { display: none; }
+        .pulse { animation: pulse 2s infinite; }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
     </style>
 </head>
-<body>
+<body class="bg-slate-100 text-slate-800 pb-10">
 
-<div class="container">
-    <header style="text-align:center;">
-        <h1 style="margin-top:0;">EuroFlow Pro 📉</h1>
+    <div id="welcome-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-indigo-900/90 backdrop-blur-md">
+        <div class="bg-white rounded-[2.5rem] p-8 max-w-sm w-full shadow-2xl text-center">
+            <div class="w-20 h-20 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center mx-auto mb-6 text-3xl">
+                <i class="fas fa-coins"></i>
+            </div>
+            <h2 class="text-2xl font-black mb-2 italic text-indigo-900">EuroFlow Pro</h2>
+            <p class="text-slate-500 text-sm mb-8">Bem-vindo! Para começar, qual é o seu saldo atual ou salário?</p>
+            <input type="number" id="initial-amount" placeholder="€ 0.00" class="w-full p-4 bg-slate-100 rounded-2xl mb-6 outline-none focus:ring-2 focus:ring-indigo-500 text-center font-bold text-2xl border-none">
+            <button onclick="setupInitialBalance()" class="w-full bg-indigo-600 text-white font-black py-4 rounded-2xl shadow-lg active:scale-95 transition-all uppercase tracking-widest text-xs">Ativar Consultor</button>
+        </div>
+    </div>
+
+    <header class="bg-indigo-700 p-8 text-white shadow-2xl rounded-b-[3rem]">
+        <div class="max-w-5xl mx-auto flex justify-between items-center">
+            <div>
+                <h1 class="text-2xl font-black tracking-tight italic">EuroFlow <span class="text-indigo-300 font-light">Pro</span></h1>
+                <p id="current-date" class="text-indigo-200 text-[10px] font-bold uppercase tracking-widest mt-1"></p>
+            </div>
+            <button onclick="exportToExcel()" class="bg-emerald-500 hover:bg-emerald-400 text-white px-5 py-2.5 rounded-2xl text-[10px] font-black shadow-lg flex items-center gap-2 active:scale-95 transition-all uppercase">
+                <i class="fas fa-file-excel"></i> Excel
+            </button>
+        </div>
     </header>
 
-    <div class="balance-card">
-        <p style="margin:0; opacity:0.9;">Saldo Disponível</p>
-        <h2 id="balance" style="font-size: 32px; margin: 10px 0;">€ 0,00</h2>
-    </div>
+    <main class="max-w-5xl mx-auto p-4 -mt-10">
+        <section class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8 text-center md:text-left">
+            <div class="bg-white p-6 rounded-[2rem] shadow-xl border-b-4 border-emerald-500">
+                <p class="text-slate-400 text-[9px] uppercase font-black tracking-tighter">Entradas</p>
+                <h2 id="total-in" class="text-2xl font-black text-emerald-600">€ 0,00</h2>
+            </div>
+            <div class="bg-white p-6 rounded-[2rem] shadow-xl border-b-4 border-rose-500">
+                <p class="text-slate-400 text-[9px] uppercase font-black tracking-tighter">Saídas</p>
+                <h2 id="total-out" class="text-2xl font-black text-rose-600">€ 0,00</h2>
+            </div>
+            <div class="bg-indigo-600 p-6 rounded-[2rem] shadow-xl text-white">
+                <p class="text-indigo-200 text-[9px] uppercase font-black tracking-tighter">Saldo Disponível</p>
+                <h2 id="total-balance" class="text-2xl font-black">€ 0,00</h2>
+            </div>
+        </section>
 
-    <div class="stats">
-        <div class="stat-box">
-            <small>Entradas</small>
-            <div id="total-income" style="color:var(--success); font-weight:bold;">€ 0,00</div>
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div class="lg:col-span-2 space-y-6">
+                <section class="bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-200">
+                    <form id="transaction-form" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <input type="text" id="desc" placeholder="O que comprou?" class="p-4 bg-slate-50 border-none rounded-2xl outline-none focus:ring-2 focus:ring-indigo-500 text-sm" required>
+                        <input type="number" id="amount" placeholder="Valor €" step="0.01" class="p-4 bg-slate-50 border-none rounded-2xl outline-none focus:ring-2 focus:ring-indigo-500 text-sm font-bold" required>
+                        <select id="category" class="p-4 bg-slate-50 border-none rounded-2xl outline-none text-sm">
+                            <option value="Salário">💰 Salário</option>
+                            <option value="Carro">🚗 Carro / Veículo</option>
+                            <option value="Alimentação">🍴 Alimentação</option>
+                            <option value="Lazer">🎨 Lazer</option>
+                            <option value="Contas">📑 Contas / Fixos</option>
+                            <option value="Outros">⚙️ Outros</option>
+                        </select>
+                        <select id="type" class="p-4 bg-slate-50 border-none rounded-2xl outline-none text-sm font-bold">
+                            <option value="in">Entrada (+)</option>
+                            <option value="out" selected>Saída (-)</option>
+                        </select>
+                        <button type="submit" class="md:col-span-2 bg-indigo-600 text-white font-black py-4 rounded-2xl shadow-lg active:scale-95 uppercase text-xs tracking-widest mt-2">Registar Movimentação</button>
+                    </form>
+                </section>
+
+                <section class="bg-white rounded-[2.5rem] shadow-sm border border-slate-200 overflow-hidden">
+                    <table class="w-full text-left">
+                        <thead class="bg-slate-50 text-[10px] text-slate-400 font-black uppercase">
+                            <tr>
+                                <th class="p-5">Cat.</th>
+                                <th class="p-5">Descrição</th>
+                                <th class="p-5 text-right">Valor</th>
+                                <th class="p-5 text-center">Ação</th>
+                            </tr>
+                        </thead>
+                        <tbody id="transaction-list" class="text-sm font-medium"></tbody>
+                    </table>
+                </section>
+            </div>
+
+            <div class="lg:col-span-1 space-y-6">
+                <section class="bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-200 text-center">
+                    <h3 class="text-[10px] font-black mb-6 text-slate-400 uppercase tracking-widest">Análise de Gastos</h3>
+                    
+                    <div class="chart-container mb-4">
+                        <canvas id="expenseChart"></canvas>
+                    </div>
+
+                    <div id="insight-card" class="mt-6 p-5 rounded-3xl bg-slate-50 border border-slate-100 text-left transition-all">
+                        <div class="flex items-center gap-2 mb-2">
+                            <div id="insight-icon" class="w-7 h-7 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center text-[10px]">
+                                <i class="fas fa-robot"></i>
+                            </div>
+                            <span class="text-[9px] font-black uppercase tracking-widest text-slate-400 italic">Consultor Pro</span>
+                        </div>
+                        <p id="insight-text" class="text-[11px] font-bold text-slate-600 leading-relaxed italic">
+                            "Aguardando dados para análise..."
+                        </p>
+                    </div>
+
+                    <div class="mt-6 p-5 rounded-3xl bg-indigo-50/50 border border-indigo-100 text-left">
+                        <div class="flex justify-between items-center mb-3">
+                            <h4 class="text-[10px] font-black uppercase text-indigo-900/40 tracking-widest">Meta de Poupança</h4>
+                            <span id="savings-perc" class="text-xs font-black text-indigo-600">0%</span>
+                        </div>
+                        <div class="w-full bg-white h-3 rounded-full overflow-hidden shadow-inner border border-indigo-100">
+                            <div id="savings-bar" class="bg-indigo-500 h-full transition-all duration-1000 shadow-[0_0_10px_rgba(99,102,241,0.5)]" style="width: 0%"></div>
+                        </div>
+                        <p class="text-[9px] text-indigo-400 mt-2 font-medium italic">* Meta: Poupar 20% do seu rendimento.</p>
+                    </div>
+                </section>
+            </div>
         </div>
-        <div class="stat-box">
-            <small>Saídas</small>
-            <div id="total-expense" style="color:var(--danger); font-weight:bold;">€ 0,00</div>
-        </div>
-    </div>
+    </main>
 
-    <input type="text" id="desc" placeholder="Descrição (ex: Supermercado)">
-    <input type="number" id="amount" placeholder="Valor em €">
-    <select id="type">
-        <option value="income">Entrada (+)</option>
-        <option value="expense">Saída (-)</option>
-    </select>
-    <button onclick="addTransaction()">Adicionar Registo</button>
-    <button style="background-color: #27ae60;" onclick="exportToExcel()">Exportar para Excel 📊</button>
+    <script>
+        let transactions = JSON.parse(localStorage.getItem('euroflow_final_data')) || [];
+        let myChart = null;
 
-    <ul id="transaction-list" style="padding:0; list-style:none; margin-top:20px;"></ul>
+        function setupInitialBalance() {
+            const val = parseFloat(document.getElementById('initial-amount').value);
+            if(isNaN(val) || val <= 0) return alert("Por favor, insira o seu saldo.");
+            transactions.push({ desc: "Saldo Inicial", amount: val, category: "Salário", type: "in", date: new Date().toLocaleDateString('pt-PT') });
+            document.getElementById('welcome-modal').style.display = 'none';
+            updateUI();
+        }
 
-    <div class="ad-container">
-        <small style="color:#aaa;">Publicidade</small>
-        <ins class="adsbygoogle"
-             style="display:block"
-             data-ad-client="ca-pub-8621641752235676"
-             data-ad-slot="auto"
-             data-ad-format="auto"
-             data-full-width-responsive="true"></ins>
-        <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
-    </div>
-</div>
+        function updateUI() {
+            const list = document.getElementById('transaction-list');
+            list.innerHTML = "";
+            let inTotal = 0, outTotal = 0;
+            const cats = { 'Carro': 0, 'Alimentação': 0, 'Lazer': 0, 'Contas': 0, 'Outros': 0 };
 
-<script>
-    let transactions = JSON.parse(localStorage.getItem('transactions')) || [];
+            transactions.forEach((t, i) => {
+                const isIn = t.type === 'in';
+                if(isIn) inTotal += t.amount;
+                else {
+                    outTotal += t.amount;
+                    if(cats.hasOwnProperty(t.category)) cats[t.category] += t.amount;
+                }
 
-    function addTransaction() {
-        const desc = document.getElementById('desc').value;
-        const amount = document.getElementById('amount').value;
-        const type = document.getElementById('type').value;
+                const row = document.createElement('tr');
+                row.className = "border-b border-slate-50 hover:bg-slate-50 transition-all";
+                row.innerHTML = `
+                    <td class="p-5 text-[10px] font-bold text-indigo-500">${t.category}</td>
+                    <td class="p-5 font-bold text-slate-600">${t.desc}</td>
+                    <td class="p-5 text-right font-black ${isIn ? 'text-emerald-500' : 'text-rose-500'}">€${t.amount.toFixed(2)}</td>
+                    <td class="p-5 text-center"><button onclick="removeTransaction(${i})" class="text-slate-300 hover:text-rose-500"><i class="fas fa-trash-alt"></i></button></td>
+                `;
+                list.prepend(row);
+            });
 
-        if (!desc || !amount) return;
-
-        const transaction = { desc, amount: parseFloat(amount), type };
-        transactions.push(transaction);
-        updateUI();
-        saveData();
-        
-        document.getElementById('desc').value = '';
-        document.getElementById('amount').value = '';
-    }
-
-    function deleteTransaction(index) {
-        transactions.splice(index, 1);
-        updateUI();
-        saveData();
-    }
-
-    function updateUI() {
-        const list = document.getElementById('transaction-list');
-        let balance = 0, income = 0, expense = 0;
-        list.innerHTML = '';
-
-        transactions.forEach((t, index) => {
-            const color = t.type === 'income' ? 'var(--success)' : 'var(--danger)';
-            const symbol = t.type === 'income' ? '+' : '-';
+            document.getElementById('total-in').innerText = `€ ${inTotal.toLocaleString('pt-PT', {minimumFractionDigits: 2})}`;
+            document.getElementById('total-out').innerText = `€ ${outTotal.toLocaleString('pt-PT', {minimumFractionDigits: 2})}`;
+            const balance = inTotal - outTotal;
+            document.getElementById('total-balance').innerText = `€ ${balance.toLocaleString('pt-PT', {minimumFractionDigits: 2})}`;
             
-            const li = document.createElement('li');
-            li.className = 'transaction-item';
-            li.innerHTML = `
-                <span>${t.desc}</span>
-                <div style="display:flex; align-items:center;">
-                    <span style="color:${color}; font-weight:bold;">${symbol}${t.amount.toFixed(2)}€</span>
-                    <button class="delete-btn" onclick="deleteTransaction(${index})">X</button>
-                </div>
-            `;
-            list.appendChild(li);
+            updateChart(cats);
+            updateInsights(inTotal, outTotal, cats);
+            updateSavingsGoal(inTotal, balance);
+            localStorage.setItem('euroflow_final_data', JSON.stringify(transactions));
+        }
 
-            if (t.type === 'income') {
-                income += t.amount;
-                balance += t.amount;
-            } else {
-                expense += t.amount;
-                balance -= t.amount;
+        function updateSavingsGoal(inc, bal) {
+            const goal = inc * 0.20; // 20% de meta
+            const progress = inc > 0 ? Math.min(Math.max((bal / goal) * 100, 0), 100) : 0;
+            document.getElementById('savings-bar').style.width = progress + '%';
+            document.getElementById('savings-perc').innerText = progress.toFixed(0) + '%';
+        }
+
+        function updateInsights(inc, exp, cats) {
+            const txt = document.getElementById('insight-text');
+            const card = document.getElementById('insight-card');
+            if(exp === 0) {
+                txt.innerText = `"Tens o teu saldo intacto. Excelente começo para poupar!"`;
+                card.className = "mt-6 p-5 rounded-3xl bg-emerald-50 border border-emerald-100 text-left";
+                return;
             }
+            const perc = (exp / inc) * 100;
+            if(perc > 80) {
+                txt.innerText = `"Cuidado! Já gastaste ${perc.toFixed(0)}% do teu rendimento. Evita novas despesas hoje."`;
+                card.className = "mt-6 p-5 rounded-3xl bg-rose-50 border border-rose-100 text-left text-rose-700";
+            } else if(cats['Carro'] > (exp * 0.4)) {
+                txt.innerText = `"O teu veículo está a consumir ${((cats['Carro']/exp)*100).toFixed(0)}% das tuas despesas. Atenção a gastos extras!"`;
+                card.className = "mt-6 p-5 rounded-3xl bg-amber-50 border border-amber-100 text-left";
+            } else {
+                txt.innerText = `"Estás com um balanço saudável. Continua a gerir como um profissional!"`;
+                card.className = "mt-6 p-5 rounded-3xl bg-indigo-50 border border-indigo-100 text-left";
+            }
+        }
+
+        function updateChart(totals) {
+            const ctx = document.getElementById('expenseChart').getContext('2d');
+            if (myChart) myChart.destroy();
+            const hasData = Object.values(totals).some(v => v > 0);
+            myChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(totals),
+                    datasets: [{
+                        data: hasData ? Object.values(totals) : [1],
+                        backgroundColor: hasData ? ['#f43f5e', '#fbbf24', '#ec4899', '#6366f1', '#94a3b8'] : ['#f1f5f9'],
+                        borderWidth: 0
+                    }]
+                },
+                options: { maintainAspectRatio: false, cutout: '80%', plugins: { legend: { position: 'bottom', labels: { font: { size: 9, weight: 'bold' }, padding: 15 } } } }
+            });
+        }
+
+        document.getElementById('transaction-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            transactions.push({
+                desc: document.getElementById('desc').value,
+                amount: parseFloat(document.getElementById('amount').value),
+                category: document.getElementById('category').value,
+                type: document.getElementById('type').value,
+                date: new Date().toLocaleDateString('pt-PT')
+            });
+            e.target.reset();
+            updateUI();
         });
 
-        document.getElementById('balance').innerText = `€ ${balance.toFixed(2)}`;
-        document.getElementById('total-income').innerText = `€ ${income.toFixed(2)}`;
-        document.getElementById('total-expense').innerText = `€ ${expense.toFixed(2)}`;
-    }
+        function removeTransaction(index) { if(confirm("Apagar este registo?")) { transactions.splice(index, 1); updateUI(); } }
 
-    function saveData() {
-        localStorage.setItem('transactions', JSON.stringify(transactions));
-    }
+        function exportToExcel() {
+            if (transactions.length === 0) return;
+            const rows = transactions.map(t => [t.date, t.desc, t.category, t.type === 'in' ? 'Entrada' : 'Saída', t.amount]);
+            rows.unshift(["DATA", "DESCRIÇÃO", "CATEGORIA", "TIPO", "VALOR (€)"]);
+            const ws = XLSX.utils.aoa_to_sheet(rows);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.sheet_add_aoa(ws, [["RESUMO EUROFLOW"], ["Entradas:", {f:`SUMIF(D2:D${rows.length},"Entrada",E2:E${rows.length})`}], ["Saídas:", {f:`SUMIF(D2:D${rows.length},"Saída",E2:E${rows.length})`}], ["SALDO ATUAL:", {f:"H2-H3"}]], {origin:"G1"});
+            XLSX.utils.book_append_sheet(wb, ws, "Dados");
+            XLSX.writeFile(wb, "EuroFlow_Pro_Export.xlsx");
+        }
 
-    function exportToExcel() {
-        let csv = "Descricao,Valor,Tipo\n";
-        transactions.forEach(t => csv += `${t.desc},${t.amount},${t.type}\n`);
-        const blob = new Blob([csv], { type: 'text/csv' });
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.setAttribute('href', url);
-        a.setAttribute('download', 'EuroFlow_Relatorio.csv');
-        a.click();
-    }
-
-    updateUI();
-</script>
+        document.getElementById('current-date').innerText = new Date().toLocaleDateString('pt-PT', { weekday: 'long', day: 'numeric', month: 'long' });
+        if(transactions.length === 0) document.getElementById('welcome-modal').style.display = 'flex';
+        updateUI();
+    </script>
 </body>
 </html>
